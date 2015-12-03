@@ -32,7 +32,7 @@ DBUSER='<%= node['chef-server-backup']['db_user'] %>'
 DBLIST=$(su $DBUSER -c 'psql -l 2>/dev/null' | awk '{print $1}' | grep -vE '^-|^List|^Name|template[0|1]|^:|^$|^\(|\|')
 BACKUPSTORE='<%= node['chef-server-backup']['backup_store'] %>'
 CONFGLIST='
-/etc/opscode \
+/etc/opscode
 /var/opt/opscode
 '
 
