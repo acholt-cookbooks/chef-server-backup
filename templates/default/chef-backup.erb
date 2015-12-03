@@ -44,7 +44,6 @@ find $BACKUPSTORE/ -maxdepth 1 -type f -mtime +8 | $LOGGER
 
 #Make TMP
 function MKDIR {
-  mkdir -m 770 -vp $BACKUPSTORE | $LOGGER
   mkdir -m 770 -vp $WORKINGDIR | $LOGGER
   chown $DBUSER $WORKINGDIR
 }
