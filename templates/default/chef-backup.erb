@@ -1,0 +1,83 @@
+#!/bin/bash
+#
+# Cookbook Name:: chef-server-backup
+# Recipe:: backup
+#
+# Copyright (C) 2015  Andrew Holt
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+#Set Path
+PATH=$PATH:/opt/opscode/embedded/bin;export PATH
+
+EMAILALERT='<%= node['chef-server-backup']['mailto'] %>'
+DATE=$(date "+%Y%m%d_%R")
+SHDATE=$(date "+%Y%m%d")
+LOGGER='/usr/bin/logger -p info -t chef-backup'
+RETENTION_DAYS='<%= node['chef-server-backup']['retention_days'] %>'
+WORKINGDIR='<%= node['chef-server-backup']['working_dir'] %>'
+DBUSER='<%= node['chef-server-backup']['db_user'] %>'
+DBLIST=$(su $DBUSER -c 'psql -l 2>/dev/null' | awk '{print $1}' | grep -vE '^-|^List|^Name|template[0|1]|^:|^$|^\(|\|')
+BACKUPSTORE='<%= node['chef-server-backup']['backup_store'] %>'
+CONFGLIST='
+/etc/opscode \
+/var/opt/opscode
+'
+
+#Logger
+echo "Starting Backup" | $LOGGER
+for i in $DBLIST; do echo "The following DB will be backup-up: $i" | $LOGGER; done
+echo "The following backup older than 8days will be removed" | $LOGGER
+find $BACKUPSTORE/ -maxdepth 1 -type f -mtime +8 | $LOGGER
+
+#Make TMP
+function MKDIR {
+  mkdir -m 770 -vp $BACKUPSTORE | $LOGGER
+  mkdir -m 770 -vp $WORKINGDIR | $LOGGER
+  chown $DBUSER $WORKINGDIR
+}
+
+#Function to Backup all Postgres Databases
+function DBBACKUP {
+  su $DBUSER -c "pg_dumpall --clean --file $WORKINGDIR/postgresql-dump-${DATE}.sql"
+}
+
+#Backup the following configuration files and folders
+function CONFBACKUP {
+  tar -cvzpf $WORKINGDIR/conf_$DATE.tar.gz $CONFGLIST --ignore-failed-read
+}
+
+#Compress all files to save space
+function DBCOMPRESS {
+  cd $WORKINGDIR/..
+  tar -czpf $BACKUPSTORE/chef_backup_$SHDATE.tar.gz chefbackup
+}
+
+#Clean up old Backups
+function CLEANUP {
+  rm -rf $WORKINGDIR
+  find $BACKUPSTORE/ -maxdepth 1 -type f -mtime +${RETENTION_DAYS} -exec rm -f {} \;
+}
+
+DBBACKUP && CONFBACKUP && DBCOMPRESS && CLEANUP
+
+if [ $? = 0 ]
+  then
+      echo "Complete" | logger -t chef-backup
+      mail -r "Chef-Server" -s "Chef-Backup Complete" $EMAILALERT < /dev/null
+else
+      CLEANUP && echo "Failed" | logger -t chef-backup
+      mail -r "Chef-Server" -s "Chef-Backup Failed" $EMAILALERT < /dev/null
+fi
