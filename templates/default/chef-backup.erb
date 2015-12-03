@@ -23,8 +23,7 @@
 PATH=$PATH:/opt/opscode/embedded/bin;export PATH
 
 EMAILALERT='<%= node['chef-server-backup']['mailto'] %>'
-DATE=$(date "+%Y%m%d_%R")
-SHDATE=$(date "+%Y%m%d")
+DATE=$(date "+%Y%m%d")
 LOGGER='/usr/bin/logger -p info -t chef-backup'
 RETENTION_DAYS='<%= node['chef-server-backup']['retention_days'] %>'
 WORKINGDIR='<%= node['chef-server-backup']['working_dir'] %>'
@@ -61,7 +60,7 @@ function CONFBACKUP {
 #Compress all files to save space
 function DBCOMPRESS {
   cd $WORKINGDIR/..
-  tar -czpf $BACKUPSTORE/chef_backup_$SHDATE.tar.gz chefbackup
+  tar -czpf $BACKUPSTORE/chef_backup_$DATE.tar.gz chefbackup
 }
 
 #Clean up old Backups
