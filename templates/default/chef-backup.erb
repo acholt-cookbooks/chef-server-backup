@@ -55,7 +55,7 @@ function DBBACKUP {
 
 #Backup the following configuration files and folders
 function CONFBACKUP {
-  tar -cvzpf $WORKINGDIR/conf_$DATE.tar.gz $CONFGLIST --ignore-failed-read
+  tar -czpf $WORKINGDIR/conf_$DATE.tar.gz $CONFGLIST --ignore-failed-read
 }
 
 #Compress all files to save space
