@@ -17,7 +17,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-OWNER = "#{node["chef-server-backup"]["db_user"]}"
+#Directory Owner
+OWNER   = "#{node["chef-server-backup"]["db_user"]}"
+#Cron Values
+MINUTE  = "#{node["chef-server-backup"]["cron"]["minute"]}"
+HOUR    = "#{node["chef-server-backup"]["cron"]["hour"]}"
+DAY     = "#{node["chef-server-backup"]["cron"]["day"]}"
+MONTH   = "#{node["chef-server-backup"]["cron"]["month"]}"
+WEEKDAY = "#{node["chef-server-backup"]["cron"]["weekday"]}"
+MAILTO  = "#{node["chef-server-backup"]["mailto"]}"
 
 
 directory node['chef-server-backup']['backup_store'] do
@@ -35,9 +43,13 @@ template '/usr/local/bin/chef-backup.sh' do
   action :create
 end
 
-cron_d 'daily-chef-backup' do
-  minute  0
-  hour    23
+cron_d 'chef-backup' do
+  minute  MINUTE
+  hour    HOUR
+  day     DAY
+  month   MONTH
+  weekday WEEKDAY
+  mailto  MAILTO
   command '/usr/local/bin/chef-backup.sh'
   user    'root'
 end
