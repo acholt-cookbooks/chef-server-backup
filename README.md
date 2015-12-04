@@ -9,7 +9,8 @@ Attributes
 
 * node['chef-server-backup']['mailto']         - Email address for notifications. Default is root
 * node['chef-server-backup']['retention_days'] - Number of days to keep backups. Default is an 8 day rotation.
-* node['chef-server-backup']['working_dir']    - Temporary working directory. Default is '/tmp/chefbackup'.
+* node['chef-server-backup']['backup_name']    - Name of the backup Tar file. Default is chef_backup.
+* node['chef-server-backup']['working_dir']    - Temporary working directory. Default is '/tmp'.
 * node['chef-server-backup']['db_user']        - The database username. Default is 'opscode-pgsql'.
 * node['chef-server-backup']['backup_store']   - Which directory to store backups '/etc/chef_backup'.
 

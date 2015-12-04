@@ -26,7 +26,8 @@ EMAILALERT='<%= node['chef-server-backup']['mailto'] %>'
 DATE=$(date "+%Y%m%d")
 LOGGER='/usr/bin/logger -p info -t chef-backup'
 RETENTION_DAYS='<%= node['chef-server-backup']['retention_days'] %>'
-WORKINGDIR='<%= node['chef-server-backup']['working_dir'] %>'
+BACKUPNAME='<%= node['chef-server-backup']['backup_name'] %>'
+WORKINGDIR="<%= node['chef-server-backup']['working_dir'] %>/$BACKUPNAME"
 DBUSER='<%= node['chef-server-backup']['db_user'] %>'
 DBLIST=$(su $DBUSER -c 'psql -l 2>/dev/null' | awk '{print $1}' | grep -vE '^-|^List|^Name|template[0|1]|^:|^$|^\(|\|')
 BACKUPSTORE='<%= node['chef-server-backup']['backup_store'] %>'
@@ -60,7 +61,7 @@ function CONFBACKUP {
 #Compress all files to save space
 function DBCOMPRESS {
   cd $WORKINGDIR/..
-  tar -czpf $BACKUPSTORE/chef_backup_$DATE.tar.gz chefbackup
+  tar -czpf $BACKUPSTORE/${BACKUPNAME}_$DATE.tar.gz $BACKUPNAME
 }
 
 #Clean up old Backups
@@ -73,9 +74,9 @@ MKDIR && DBBACKUP && CONFBACKUP && DBCOMPRESS && CLEANUP
 
 if [ $? = 0 ]
   then
-      echo "Complete" | logger -t chef-backup
-      mail -r "Chef-Server" -s "Chef-Backup Complete" $EMAILALERT < /dev/null
+      echo "Complete" | $LOGGER
+      mail -r "Chef-Server" -s "$BACKUPNAME Complete" $EMAILALERT < /dev/null
 else
-      CLEANUP && echo "Failed" | logger -t chef-backup
-      mail -r "Chef-Server" -s "Chef-Backup Failed" $EMAILALERT < /dev/null
+      CLEANUP && echo "Failed" | $LOGGER
+      mail -r "Chef-Server" -s "$BACKUPNAME Failed" $EMAILALERT < /dev/null
 fi
