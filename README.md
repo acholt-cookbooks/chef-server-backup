@@ -19,6 +19,28 @@ Attributes
 * `node['chef-server-backup']['cron']['month']`   - The month in the year on which a cron entry is to run (1 - 12). Default value: *
 * `node['chef-server-backup']['cron']['weekday']` - The day of the week on which this entry is to run (0 - 6), where Sunday = 0. Default value: *
 
+Usage
+-----
+Set up the Chef server backup attributes in a role. For example create a role called
+chefserver.json the is applied to ll Chef standalone server.
+
+```json
+{
+    "name": "chefserver",
+    "description": "Role applied to Chef Servers",
+    "chef_type": "role",
+    "json_class": "Chef::Role",
+    "default_attributes": {
+      "chef-server-backup": {
+        "mailto": "backup@example.com",
+        "retention_days": "8"
+      }
+    },
+    "run_list": ["chef-server-backup"]
+}
+```
+
+
 License and Authors
 -------------------
 - Author:: Andrew Holt
