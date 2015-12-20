@@ -22,7 +22,7 @@ Attributes
 Usage
 -----
 Set up the Chef server backup attributes in a role. For example create a role called
-chefserver.json the is applied to ll Chef standalone server.
+chefserver.json the is applied to all Chef standalone server.
 
 ```json
 {
