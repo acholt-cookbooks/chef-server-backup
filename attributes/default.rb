@@ -1,6 +1,6 @@
 #
 # Cookbook Name:: chef-server-backup
-# Recipe:: default
+# Attributes:: default
 #
 # Copyright (C) 2015  Andrew Holt
 #
